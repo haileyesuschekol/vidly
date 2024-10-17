@@ -8,7 +8,7 @@ const genresSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 2,
-    maxlength: 35,
+    maxlength: 255,
   },
 })
 
@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
 })
 
 router.post("/", async (req, res) => {
-  const result = validateCourse(req.body)
+  const result = validateGenre(req.body)
   if (result.error) return res.send(result.error.details[0].message).status(400)
   let genres = new Genre({ name: req.body.name })
   genres = await genres.save()
@@ -28,7 +28,7 @@ router.post("/", async (req, res) => {
 })
 
 router.put("/:id", async (req, res) => {
-  const result = validateCourse(req.body)
+  const result = validateGenre(req.body)
   if (result.error) return res.send(result.error.details[0].message).status(400)
 
   const genres = await Genre.findByIdAndUpdate(
@@ -56,11 +56,11 @@ router.get("/:id", async (req, res) => {
   return res.send(genres).status(200)
 })
 
-function validateCourse(course) {
+function validateGenre(genre) {
   const schema = Joi.object({
-    name: Joi.string().max(20).min(1).required(),
+    name: Joi.string().max(255).min(2).required(),
   })
-  const result = schema.validate(course)
+  const result = schema.validate(genre)
   return result
 }
 
