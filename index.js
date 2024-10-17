@@ -3,7 +3,7 @@ const express = require("express")
 const app = express()
 const genres = require("./router/genres")
 const home = require("./router/home")
-const customer = require("./router/customer")
+const customer = require("./router/customers")
 
 mongoose
   .connect("mongodb://localhost/vidly")
