@@ -1,43 +1,54 @@
+const mongoose = require("mongoose")
 const express = require("express")
 const router = express.Router()
 const Joi = require("joi")
-const genres = [
-  { id: 1, name: "action" },
-  { id: 2, name: "adventure" },
-  { id: 3, name: "comedy" },
-]
 
-router.get("/", (req, res) => {
+const genresSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    minlength: 2,
+    maxlength: 35,
+  },
+})
+
+const Genre = mongoose.model("Genre", genresSchema)
+
+router.get("/", async (req, res) => {
+  const genres = await Genre.find().sort({ name: 1 })
   res.send(genres).status(400)
 })
 
-router.get("/:id", (req, res) => {
-  const finder = genres.find((g) => g.id === parseInt(req.params.id))
-  if (!finder) return res.send("not found").status(400)
-  return res.send(finder).status(200)
-})
-
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   validateCourse(req.body)
-  const newGenres = { id: genres.length + 1, name: req.body.name }
-  genres.push(newGenres)
-  return res.send(genres).status(201)
+  let genres = new Genre({ name: req.body.name })
+  genres = await genres.save()
+  res.send(genres).status(201)
 })
 
-router.put("/:id", (req, res) => {
-  const finder = genres.find((g) => g.id === parseInt(req.params.id))
-  if (!finder) return res.send("not found").status(400)
+router.put("/:id", async (req, res) => {
   validateCourse(req.body)
-  finder.name = req.body.name
-  res.send(finder).status(201)
+  const genres = await Genre.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+    },
+    { new: true }
+  )
+  if (!genres)
+    return res.send("The Genre with the given id is not found").status(400)
+  res.send(genres).status(201)
 })
 
-router.delete("/:id", (req, res) => {
-  const finder = genres.find((g) => g.id === parseInt(req.params.id))
-  if (!finder) return res.send("invalid request").status(400)
+router.delete("/:id", async (req, res) => {
+  const genres = await Genre.findByIdAndDelete(req.params.id)
+  if (!genres) return res.send("invalid request").status(400)
+  return res.send(genres).status(200)
+})
 
-  const index = genres.indexOf(finder)
-  genres.splice(index, 1)
+router.get("/:id", async (req, res) => {
+  const genres = await Genre.findById(req.params.id)
+  if (!genres) return res.send("not found").status(400)
   return res.send(genres).status(200)
 })
 
